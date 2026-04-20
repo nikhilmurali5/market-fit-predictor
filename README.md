@@ -9,7 +9,7 @@ A full-stack system that predicts Market Fit Score (0–100) for electronic prod
 ```
 Frontend (HTML/JS)  →  Node.js/Express :5000  →  FastAPI ML :8000
                     ↘                    ↘           ↗
-                     MongoDB            TinyLlama (Local LLM)
+                     MongoDB            GROQ API (LLaMA 3.1)
 ```
 
 ---
@@ -23,7 +23,7 @@ market-fit-predictor/
 ├── backend/
 │   ├── server.js               # Express API server
 │   ├── models.js               # Mongoose User + Product schemas
-│   ├── aiRecommendation.js     # TinyLlama integration
+│   ├── aiRecommendation.js     # Groq API integration
 │   ├── package.json
 │   └── .env.example
 ├── ml-service/
@@ -47,6 +47,7 @@ market-fit-predictor/
 - Python ≥ 3.10
 - MongoDB (local or Atlas)
 - [Ollama](https://ollama.com/) (to run TinyLlama locally)
+- + A free GROQ API key → https://console.groq.com
 
 ---
 
