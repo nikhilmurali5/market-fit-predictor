@@ -1,0 +1,85 @@
+/**
+ * AI Recommendation Module (LOCAL LLAMA - FINAL WORKING)
+ */
+
+const axios = require("axios");
+
+// ─── Build prompt ─────────────────────────────────────────────────────────────
+function buildPrompt(category, specifications, score) {
+  const specLines = Object.entries(specifications)
+    .map(([k, v]) => `- ${k}: ${v}`)
+    .join("\n");
+
+  return `
+You are a product expert.
+
+Analyze this product and give ONLY 5 to 6 short, clear recommendations.
+
+Category: ${category}
+Score: ${score}/100
+
+Specifications:
+${specLines}
+
+Rules:
+- Give ONLY bullet points
+- Each point must be specific to the specs
+- Keep each point 1 line only
+- No paragraph
+- No introduction
+- No conclusion
+
+Example format:
+- Best for students due to good battery and storage
+- Not ideal for gaming because of low RAM
+- Camera performs well in daylight but weak in low light
+- Suitable for daily use and social media
+- Could improve battery backup for heavy users
+`;
+}
+
+// ─── LOCAL LLAMA (OLLAMA) ─────────────────────────────────────────────────────
+async function callLlama(prompt) {
+  try {
+    const res = await axios.post(
+      "http://127.0.0.1:11434/api/generate",
+      {
+        model: "tinyllama",   // ✅ your installed model
+        prompt: prompt,
+        stream: false
+      }
+    );
+
+    const text = res.data.response;
+
+    console.log("🦙 LLAMA RESPONSE:", text);
+
+    return text;
+
+  } catch (err) {
+    console.log("❌ LLAMA ERROR:", err.message);
+    return "";
+  }
+}
+
+// ─── Main function ───────────────────────────────────────────────────────────
+async function getAIRecommendation(category, specifications, score) {
+  const prompt = buildPrompt(category, specifications, score);
+
+  let raw = "";
+
+  try {
+    raw = await callLlama(prompt);   // ✅ USING LOCAL LLAMA
+  } catch (err) {
+    console.error("❌ LLAMA FAILED:", err.message);
+    raw = "";
+  }
+
+  console.log("🧠 FINAL AI OUTPUT:", raw);
+
+  return {
+    recommendation: raw || "AI could not generate recommendation"
+  };
+}
+
+module.exports = { getAIRecommendation };

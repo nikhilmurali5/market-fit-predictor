@@ -1,0 +1,1181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MarketFit · Electronics Market Predictor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+
+<style>
+/* ── Variables ───────────────────────────────────────────────────────────── */
+:root {
+  --bg:       #0a0b0f;
+  --surface:  #111318;
+  --card:     #161a22;
+  --border:   rgba(255,255,255,0.07);
+  --accent:   #00e5a0;
+  --accent2:  #5b8fff;
+  --accent3:  #ff6b6b;
+  --text:     #e8eaf0;
+  --muted:    #6b7280;
+  --radius:   14px;
+  --font-display: 'Syne', sans-serif;
+  --font-body:    'DM Sans', sans-serif;
+}
+
+/* ── Reset ───────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── Background mesh ─────────────────────────────────────────────────────── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 40% at 20% 10%, rgba(0,229,160,0.06) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 50% at 80% 80%, rgba(91,143,255,0.06) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Typography ──────────────────────────────────────────────────────────── */
+h1, h2, h3 { font-family: var(--font-display); }
+
+/* ── Pages ───────────────────────────────────────────────────────────────── */
+.page { display: none; position: relative; z-index: 1; }
+.page.active { display: block; }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   AUTH PAGE
+══════════════════════════════════════════════════════════════════════════ */
+#auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 44px 40px;
+  animation: slideUp 0.5s ease both;
+}
+
+.auth-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 32px;
+}
+.auth-logo .icon {
+  width: 40px; height: 40px;
+  background: var(--accent);
+  border-radius: 10px;
+  display: grid; place-items: center;
+  font-size: 18px;
+}
+.auth-logo span {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+.auth-logo span em { color: var(--accent); font-style: normal; }
+
+.auth-tabs {
+  display: flex;
+  background: var(--surface);
+  border-radius: 10px;
+  padding: 4px;
+  margin-bottom: 28px;
+}
+.auth-tab {
+  flex: 1; padding: 10px;
+  text-align: center;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--muted);
+  border: none; background: none;
+}
+.auth-tab.active {
+  background: var(--accent);
+  color: #000;
+  font-weight: 700;
+}
+
+.form-group { margin-bottom: 16px; }
+.form-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+  margin-bottom: 7px;
+  letter-spacing: 0.3px;
+}
+.form-group input {
+  width: 100%;
+  padding: 13px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 15px;
+  transition: border-color 0.2s;
+  outline: none;
+}
+.form-group input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(0,229,160,0.1);
+}
+
+.btn-primary {
+  width: 100%;
+  padding: 14px;
+  background: var(--accent);
+  color: #000;
+  border: none;
+  border-radius: var(--radius);
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 8px;
+  letter-spacing: 0.2px;
+}
+.btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); }
+.btn-primary:active { transform: translateY(0); }
+.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+.auth-error {
+  background: rgba(255,107,107,0.1);
+  border: 1px solid rgba(255,107,107,0.3);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 13px;
+  color: var(--accent3);
+  margin-top: 12px;
+  display: none;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   DASHBOARD
+══════════════════════════════════════════════════════════════════════════ */
+#dashboard-page { min-height: 100vh; }
+
+/* Nav */
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 32px;
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0;
+  background: rgba(10,11,15,0.85);
+  backdrop-filter: blur(12px);
+  z-index: 100;
+}
+.nav-logo {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+.nav-logo em { color: var(--accent); font-style: normal; }
+
+.nav-right { display: flex; align-items: center; gap: 16px; }
+.nav-user {
+  font-size: 14px; color: var(--muted);
+}
+.nav-user strong { color: var(--text); }
+
+.btn-logout {
+  padding: 8px 16px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-logout:hover { border-color: var(--accent3); color: var(--accent3); }
+
+/* Dashboard grid */
+.dashboard-layout {
+  display: grid;
+  grid-template-columns: 400px 1fr;
+  gap: 0;
+  min-height: calc(100vh - 65px);
+}
+
+/* ── Left panel ──────────────────────────────────────────────────────────── */
+.panel-left {
+  border-right: 1px solid var(--border);
+  padding: 28px 24px;
+  overflow-y: auto;
+}
+
+.panel-title {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 20px;
+}
+
+/* Category selector */
+.category-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+.cat-btn {
+  padding: 14px 10px;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s;
+  color: var(--text);
+}
+.cat-btn:hover { border-color: rgba(0,229,160,0.4); }
+.cat-btn.selected {
+  border-color: var(--accent);
+  background: rgba(0,229,160,0.08);
+}
+.cat-btn .cat-icon { font-size: 22px; margin-bottom: 6px; }
+.cat-btn .cat-name {
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--font-display);
+  letter-spacing: 0.3px;
+}
+
+/* Feature inputs */
+.features-form { margin-bottom: 20px; }
+.feature-row { margin-bottom: 12px; }
+.feature-row label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+.feature-row label span {
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 13px;
+}
+.feature-slider {
+  width: 100%;
+  -webkit-appearance: none;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--surface);
+  outline: none;
+  cursor: pointer;
+  position: relative;
+}
+.feature-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  border: 2px solid var(--bg);
+  box-shadow: 0 2px 8px rgba(0,229,160,0.4);
+  transition: box-shadow 0.2s;
+}
+.feature-slider::-webkit-slider-thumb:hover {
+  box-shadow: 0 2px 16px rgba(0,229,160,0.6);
+}
+
+.feature-input-num {
+  width: 100%;
+  padding: 10px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-size: 15px;
+  font-family: var(--font-body);
+  outline: none;
+  transition: border-color 0.2s;
+}
+.feature-input-num:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(0,229,160,0.08);
+}
+
+.btn-predict {
+  width: 100%;
+  padding: 16px;
+  background: var(--accent);
+  color: #000;
+  border: none;
+  border-radius: var(--radius);
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.25s;
+  letter-spacing: 0.3px;
+  position: relative;
+  overflow: hidden;
+}
+.btn-predict::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0.15);
+  transform: translateX(-100%);
+  transition: transform 0.3s;
+}
+.btn-predict:hover::before { transform: translateX(0); }
+.btn-predict:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,229,160,0.3); }
+.btn-predict:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+/* ── Right panel ─────────────────────────────────────────────────────────── */
+.panel-right {
+  padding: 28px 32px;
+  overflow-y: auto;
+}
+
+/* Empty state */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 400px;
+  text-align: center;
+  gap: 16px;
+  color: var(--muted);
+}
+.empty-icon { font-size: 56px; opacity: 0.4; }
+.empty-state p { font-size: 15px; max-width: 260px; line-height: 1.6; }
+
+/* Loading overlay */
+.loading-overlay {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  gap: 24px;
+}
+.loading-overlay.active { display: flex; }
+
+.loader {
+  width: 56px; height: 56px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+}
+.loading-steps { display: flex; flex-direction: column; gap: 8px; }
+.loading-step {
+  font-size: 13px;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: color 0.3s;
+}
+.loading-step.done { color: var(--accent); }
+.loading-step .dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+/* Results */
+.results-container { display: none; animation: fadeIn 0.5s ease; }
+.results-container.active { display: block; }
+
+/* Score card */
+.score-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 28px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+
+.score-ring-container { flex-shrink: 0; position: relative; }
+.score-ring-container canvas { display: block; }
+.score-ring-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.score-number {
+  font-family: var(--font-display);
+  font-size: 36px;
+  font-weight: 800;
+  line-height: 1;
+}
+.score-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+.score-info { flex: 1; }
+.score-category {
+  font-size: 12px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.score-title {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 800;
+  margin-bottom: 12px;
+  line-height: 1.2;
+}
+.score-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 100px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.score-badge.good    { background: rgba(0,229,160,0.15); color: var(--accent); }
+.score-badge.average { background: rgba(255,180,0,0.15); color: #ffb400; }
+.score-badge.poor    { background: rgba(255,107,107,0.15); color: var(--accent3); }
+
+/* AI Recommendation cards */
+.rec-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+.rec-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+}
+.rec-card.full-width { grid-column: 1 / -1; }
+.rec-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.rec-card-icon { font-size: 18px; }
+.rec-card-title {
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.rec-use-case {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text);
+}
+.rec-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.rec-list li {
+  font-size: 13px;
+  line-height: 1.5;
+  padding-left: 18px;
+  position: relative;
+  color: var(--text);
+}
+.rec-list li::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 7px;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+}
+.rec-list.adv li::before { background: var(--accent); }
+.rec-list.dis li::before { background: var(--accent3); }
+.rec-list.sug li::before { background: var(--accent2); }
+
+/* Chart card */
+.chart-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+.chart-card-title {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+
+/* History */
+.history-section { margin-top: 8px; }
+.history-title {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 14px;
+}
+.history-list { display: flex; flex-direction: column; gap: 8px; }
+.history-item {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+.history-item:hover { border-color: rgba(0,229,160,0.3); }
+.history-item-left { display: flex; align-items: center; gap: 12px; }
+.history-item-icon {
+  font-size: 20px;
+  width: 36px; height: 36px;
+  background: var(--surface);
+  border-radius: 8px;
+  display: grid; place-items: center;
+}
+.history-item-info {}
+.history-item-cat { font-size: 12px; color: var(--muted); font-weight: 500; }
+.history-item-date { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.history-item-score {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 800;
+}
+
+/* Toasts */
+.toast {
+  position: fixed;
+  bottom: 24px; right: 24px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 20px;
+  font-size: 14px;
+  z-index: 9999;
+  animation: toastIn 0.3s ease;
+  max-width: 300px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+.toast.success { border-color: var(--accent); color: var(--accent); }
+.toast.error   { border-color: var(--accent3); color: var(--accent3); }
+
+/* ── Animations ──────────────────────────────────────────────────────────── */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; } to { opacity: 1; }
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .dashboard-layout { grid-template-columns: 1fr; }
+  .panel-left { border-right: none; border-bottom: 1px solid var(--border); }
+  .rec-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     AUTH PAGE
+═══════════════════════════════════════════════════════════════════════════ -->
+<div id="auth-page" class="page">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="icon">📡</div>
+      <span>Market<em>Fit</em></span>
+    </div>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchTab('login')">Sign In</button>
+      <button class="auth-tab" onclick="switchTab('register')">Register</button>
+    </div>
+
+    <div id="login-form">
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" id="login-email" placeholder="you@example.com" />
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="login-password" placeholder="••••••••" />
+      </div>
+      <button class="btn-primary" onclick="handleLogin()">Sign In</button>
+    </div>
+
+    <div id="register-form" style="display:none">
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" id="reg-name" placeholder="Alex Johnson" />
+      </div>
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" id="reg-email" placeholder="you@example.com" />
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="reg-password" placeholder="Min. 6 characters" />
+      </div>
+      <button class="btn-primary" onclick="handleRegister()">Create Account</button>
+    </div>
+
+    <div class="auth-error" id="auth-error"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     DASHBOARD PAGE
+═══════════════════════════════════════════════════════════════════════════ -->
+<div id="dashboard-page" class="page active">
+
+  <!-- Nav -->
+  <nav class="nav">
+    <div class="nav-logo">Market<em>Fit</em></div>
+    <div class="nav-right">
+      <div class="nav-user" id="nav-user">Welcome, <strong id="nav-name">User</strong></div>
+      <button class="btn-logout" onclick="handleLogout()">Sign Out</button>
+    </div>
+  </nav>
+
+  <div class="dashboard-layout">
+
+    <!-- ── Left Panel: Input Form ── -->
+    <div class="panel-left">
+      <p class="panel-title">Product Category</p>
+
+      <div class="category-grid">
+        <button class="cat-btn selected" data-cat="smartphone" onclick="selectCategory(this)">
+          <div class="cat-icon">📱</div>
+          <div class="cat-name">Smartphone</div>
+        </button>
+        <button class="cat-btn" data-cat="laptop" onclick="selectCategory(this)">
+          <div class="cat-icon">💻</div>
+          <div class="cat-name">Laptop</div>
+        </button>
+        <button class="cat-btn" data-cat="smartwatch" onclick="selectCategory(this)">
+          <div class="cat-icon">⌚</div>
+          <div class="cat-name">Smartwatch</div>
+        </button>
+        <button class="cat-btn" data-cat="washing_machine" onclick="selectCategory(this)">
+          <div class="cat-icon">🫧</div>
+          <div class="cat-name">Washing Machine</div>
+        </button>
+      </div>
+
+      <p class="panel-title">Specifications</p>
+      <div class="features-form" id="features-form"></div>
+
+      <button class="btn-predict" id="predict-btn" onclick="handlePredict()">
+        ⚡ Predict Market Fit
+      </button>
+    </div>
+
+    <!-- ── Right Panel: Results ── -->
+    <div class="panel-right">
+
+      <!-- Empty state -->
+      <div class="empty-state" id="empty-state">
+        <div class="empty-icon">🎯</div>
+        <h3 style="font-family:var(--font-display);font-size:18px;color:var(--text)">Ready to Predict</h3>
+        <p>Configure your product specs on the left and hit Predict to see the market fit score.</p>
+      </div>
+
+      <!-- Loading -->
+      <div class="loading-overlay" id="loading-overlay">
+        <div class="loader"></div>
+        <div class="loading-steps">
+          <div class="loading-step" id="step1"><div class="dot"></div>Analyzing specifications…</div>
+          <div class="loading-step" id="step2"><div class="dot"></div>Running ML prediction…</div>
+          <div class="loading-step" id="step3"><div class="dot"></div>Generating AI insights…</div>
+          <div class="loading-step" id="step4"><div class="dot"></div>Saving results…</div>
+        </div>
+      </div>
+
+      <!-- Results -->
+      <div class="results-container" id="results-container">
+
+        <!-- Score card -->
+        <div class="score-card">
+          <div class="score-ring-container">
+            <canvas id="score-donut" width="130" height="130"></canvas>
+            <div class="score-ring-label">
+              <div class="score-number" id="score-number">--</div>
+              <div class="score-sub">/ 100</div>
+            </div>
+          </div>
+          <div class="score-info">
+            <div class="score-category" id="result-category">Category</div>
+            <div class="score-title" id="result-title">Market Fit Score</div>
+            <div class="score-badge" id="score-badge">Analyzing…</div>
+          </div>
+        </div>
+
+        <!-- Specs bar chart -->
+        <div class="chart-card">
+          <div class="chart-card-title">Specification Profile</div>
+          <canvas id="specs-chart" height="120"></canvas>
+        </div>
+
+        <!-- AI Recommendations -->
+        <!-- AI Recommendations -->
+<div class="rec-grid" id="rec-grid">
+  <div class="rec-card full-width">
+
+    <div class="rec-card-header">
+      <span class="rec-card-icon">🤖</span>
+      <span class="rec-card-title">AI Recommendation</span>
+    </div>
+
+    <div class="rec-use-case" id="rec-text">—</div>
+
+  </div>
+</div>
+        <!-- History -->
+        <div class="history-section">
+          <div class="history-title">Prediction History</div>
+          <div class="history-list" id="history-list"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════════════════════════════════════════════ -->
+<script>
+const API = "http://localhost:5000";
+
+// ── Feature config ─────────────────────────────────────────────────────────
+const FEATURES = {
+  smartphone: [
+    { key: "ram_gb",        label: "RAM",          unit: "GB",   min: 1,   max: 16,   step: 1,   def: 8  },
+    { key: "storage_gb",    label: "Storage",       unit: "GB",   min: 32,  max: 1024, step: 32,  def: 256 },
+    { key: "battery_mah",   label: "Battery",       unit: "mAh",  min: 2000,max: 6000, step: 100, def: 4000 },
+    { key: "camera_mp",     label: "Camera",        unit: "MP",   min: 8,   max: 200,  step: 1,   def: 48 },
+    { key: "display_size",  label: "Display Size",  unit: "inch", min: 4.5, max: 7,    step: 0.1, def: 6.1 },
+  ],
+  laptop: [
+    { key: "ram_gb",        label: "RAM",           unit: "GB",   min: 4,   max: 64,   step: 4,   def: 16 },
+    { key: "storage_gb",    label: "Storage",       unit: "GB",   min: 128, max: 2048, step: 128, def: 512 },
+    { key: "processor_ghz",label: "Processor",      unit: "GHz",  min: 1.5, max: 5.5,  step: 0.1, def: 3.2 },
+    { key: "battery_wh",   label: "Battery",        unit: "Wh",   min: 30,  max: 100,  step: 5,   def: 56 },
+  ],
+  smartwatch: [
+    { key: "battery_life_days",   label: "Battery Life",    unit: "days",min: 1,  max: 14,  step: 1,   def: 5 },
+    { key: "display_size_mm",     label: "Display Size",    unit: "mm",  min: 30, max: 55,  step: 1,   def: 44 },
+    { key: "resolution_px",       label: "Resolution",      unit: "px",  min: 300,max: 500, step: 10,  def: 410 },
+    { key: "connectivity_count",  label: "Connectivity",    unit: "opts",min: 1,  max: 6,   step: 1,   def: 4 },
+  ],
+  washing_machine: [
+    { key: "capacity_kg",         label: "Capacity",        unit: "kg",  min: 5,  max: 15,  step: 0.5, def: 8 },
+    { key: "spin_speed_rpm",      label: "Spin Speed",      unit: "RPM", min: 400,max: 1800, step: 100, def: 1200 },
+    { key: "energy_rating",       label: "Energy Rating",   unit: "/5",  min: 1,  max: 5,   step: 1,   def: 4 },
+    { key: "water_consumption_l", label: "Water Use (lower=better)", unit: "L", min: 30, max: 90, step: 5, def: 50 },
+  ],
+};
+
+const CAT_ICONS = { smartphone:"📱", laptop:"💻", smartwatch:"⌚", washing_machine:"🫧" };
+const CAT_LABELS = { smartphone:"Smartphone", laptop:"Laptop", smartwatch:"Smartwatch", washing_machine:"Washing Machine" };
+
+let currentCategory = "smartphone";
+let token = localStorage.getItem("mf_token") || null;
+let userName = localStorage.getItem("mf_name") || "";
+let donutChart = null;
+let specsChart = null;
+
+// ── Auth helpers ───────────────────────────────────────────────────────────
+function showPage(id) {
+  // Hide all pages
+  document.querySelectorAll(".page").forEach(p => {
+    p.style.display = "none";
+  });
+
+  // Show selected page
+  const page = document.getElementById(id);
+  if (page) {
+    page.style.display = "block";
+  }
+}
+
+function switchTab(tab) {
+  document.querySelectorAll(".auth-tab").forEach((t, i) => {
+    t.classList.toggle("active", (i === 0 && tab === "login") || (i === 1 && tab === "register"));
+  });
+  document.getElementById("login-form").style.display    = tab === "login"    ? "" : "none";
+  document.getElementById("register-form").style.display = tab === "register" ? "" : "none";
+  document.getElementById("auth-error").style.display = "none";
+}
+
+function showAuthError(msg) {
+  const el = document.getElementById("auth-error");
+  el.textContent = msg;
+  el.style.display = "block";
+}
+
+async function handleLogin() {
+  const email = document.getElementById("login-email").value.trim();
+  const password = document.getElementById("login-password").value;
+  if (!email || !password) return showAuthError("Please fill in all fields.");
+  try {
+    const res = await fetch(`${API}/login`, {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ email, password }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Login failed");
+    saveSession(data.token, data.user.name);
+
+  } catch(e) { showAuthError(e.message); }
+}
+
+async function handleRegister() {
+  const name     = document.getElementById("reg-name").value.trim();
+  const email    = document.getElementById("reg-email").value.trim();
+  const password = document.getElementById("reg-password").value;
+  if (!name || !email || !password) return showAuthError("Please fill in all fields.");
+  try {
+    const res = await fetch(`${API}/register`, {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ name, email, password }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Registration failed");
+    saveSession(data.token, data.user.name);
+  } catch(e) { showAuthError(e.message); }
+}
+
+function saveSession(t, name) {
+  token = t; userName = name;
+  localStorage.setItem("mf_token", t);
+  localStorage.setItem("mf_name", name);
+  document.getElementById("nav-name").textContent = name;
+  showPage("dashboard-page");
+  renderFeatureForm();
+  loadHistory();
+}
+
+function handleLogout() {
+  token = null; userName = "";
+  localStorage.removeItem("mf_token");
+  localStorage.removeItem("mf_name");
+  showPage("auth-page");
+}
+
+// ── Category & form ────────────────────────────────────────────────────────
+function selectCategory(btn) {
+  document.querySelectorAll(".cat-btn").forEach(b => b.classList.remove("selected"));
+  btn.classList.add("selected");
+  currentCategory = btn.dataset.cat;
+  renderFeatureForm();
+}
+
+function renderFeatureForm() {
+  const features = FEATURES[currentCategory];
+  const container = document.getElementById("features-form");
+  container.innerHTML = features.map(f => `
+    <div class="feature-row">
+      <label>${f.label} <span id="val-${f.key}">${f.def} ${f.unit}</span></label>
+      <input type="range" class="feature-slider"
+        id="slider-${f.key}"
+        min="${f.min}" max="${f.max}" step="${f.step}" value="${f.def}"
+        oninput="syncSlider('${f.key}','${f.unit}',this.value)"
+      />
+    </div>
+  `).join("");
+}
+
+function syncSlider(key, unit, val) {
+  document.getElementById(`val-${key}`).textContent = `${parseFloat(val)} ${unit}`;
+}
+
+function getSpecValues() {
+  const features = FEATURES[currentCategory];
+  const specs = {};
+  features.forEach(f => {
+    const el = document.getElementById(`slider-${f.key}`);
+    specs[f.key] = parseFloat(el.value);
+  });
+  return specs;
+}
+
+// ── Predict ────────────────────────────────────────────────────────────────
+async function handlePredict() {
+  if (!token) return showToast("Please log in first.", "error");
+  const specs = getSpecValues();
+
+  // Show loading
+  document.getElementById("empty-state").style.display = "none";
+  document.getElementById("results-container").classList.remove("active");
+  document.getElementById("loading-overlay").classList.add("active");
+  document.getElementById("predict-btn").disabled = true;
+
+  // Animate loading steps
+  const steps = ["step1","step2","step3","step4"];
+  steps.forEach(s => document.getElementById(s).classList.remove("done"));
+  let si = 0;
+  const stepTimer = setInterval(() => {
+    if (si < steps.length) {
+      document.getElementById(steps[si]).classList.add("done");
+      si++;
+    }
+  }, 800);
+
+  try {
+    const res = await fetch(`${API}/predict-product`, {
+      method: "POST",
+      headers: { "Content-Type":"application/json", "Authorization":`Bearer ${token}` },
+      body: JSON.stringify({ category: currentCategory, specifications: specs }),
+    });
+    const data = await res.json();
+    clearInterval(stepTimer);
+    steps.forEach(s => document.getElementById(s).classList.add("done"));
+
+    if (!res.ok) throw new Error(data.error || "Prediction failed");
+
+    setTimeout(() => {
+      document.getElementById("loading-overlay").classList.remove("active");
+      renderResults(data);
+      loadHistory();
+    }, 400);
+
+  } catch(e) {
+    clearInterval(stepTimer);
+    document.getElementById("loading-overlay").classList.remove("active");
+    document.getElementById("empty-state").style.display = "";
+    showToast(e.message, "error");
+  } finally {
+    document.getElementById("predict-btn").disabled = false;
+  }
+}
+
+// ── Render results ─────────────────────────────────────────────────────────
+function renderResults(data) {
+  const score = Math.round(data.market_fit_score);
+  const rec   = data.ai_recommendation || {};
+  console.log("AI DATA:", rec);
+  const cat   = data.category;
+  const specs = data.specifications;
+
+  // Score number
+  document.getElementById("score-number").textContent  = score;
+  document.getElementById("result-category").textContent = CAT_LABELS[cat] || cat;
+  document.getElementById("result-title").textContent  = "Market Fit Analysis";
+
+  // Badge
+  const badge = document.getElementById("score-badge");
+  if (score >= 70) {
+    badge.className = "score-badge good";
+    badge.textContent = "🟢 Strong Market Fit";
+  } else if (score >= 45) {
+    badge.className = "score-badge average";
+    badge.textContent = "🟡 Moderate Market Fit";
+  } else {
+    badge.className = "score-badge poor";
+    badge.textContent = "🔴 Weak Market Fit";
+  }
+
+  // Score donut chart
+  const scoreColor = score >= 70 ? "#00e5a0" : score >= 45 ? "#ffb400" : "#ff6b6b";
+  if (donutChart) donutChart.destroy();
+  donutChart = new Chart(document.getElementById("score-donut"), {
+    type: "doughnut",
+    data: {
+      datasets: [{
+        data: [score, 100 - score],
+        backgroundColor: [scoreColor, "rgba(255,255,255,0.05)"],
+        borderWidth: 0,
+        borderRadius: 4,
+      }],
+    },
+    options: {
+      cutout: "72%",
+      plugins: { tooltip: { enabled: false } },
+      animation: { duration: 1000 },
+    },
+  });
+
+  // Specs bar chart
+  const features = FEATURES[cat];
+  const labels   = features.map(f => f.label);
+  const values   = features.map(f => {
+    const raw = specs[f.key] || 0;
+    return Math.round(((raw - f.min) / (f.max - f.min)) * 100);
+  });
+
+  if (specsChart) specsChart.destroy();
+  specsChart = new Chart(document.getElementById("specs-chart"), {
+    type: "bar",
+    data: {
+      labels,
+      datasets: [{
+        label: "Spec Percentile",
+        data: values,
+        backgroundColor: values.map(v =>
+          v >= 70 ? "rgba(0,229,160,0.7)" : v >= 40 ? "rgba(255,180,0,0.7)" : "rgba(255,107,107,0.7)"
+        ),
+        borderRadius: 6,
+      }],
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: {
+          min: 0, max: 100,
+          grid: { color: "rgba(255,255,255,0.05)" },
+          ticks: { color: "#6b7280", font: { size: 11 } },
+        },
+        x: {
+          grid: { display: false },
+          ticks: { color: "#6b7280", font: { size: 11 } },
+        },
+      },
+      plugins: { legend: { display: false } },
+    },
+  });
+
+  // AI recommendations
+ document.getElementById("rec-text").innerText =
+  rec.recommendation || "No recommendation available";
+
+  document.getElementById("results-container").classList.add("active");
+}
+
+function renderList(id, items) {
+  document.getElementById(id).innerHTML = items.map(i => `<li>${i}</li>`).join("");
+}
+
+// ── History ────────────────────────────────────────────────────────────────
+async function loadHistory() {
+  if (!token) return;
+  try {
+    const res = await fetch(`${API}/user-products`, {
+      headers: { "Authorization": `Bearer ${token}` },
+    });
+    if (!res.ok) return;
+    const { products } = await res.json();
+    renderHistory(products);
+  } catch {}
+}
+
+function renderHistory(products) {
+  const container = document.getElementById("history-list");
+  if (!products.length) {
+    container.innerHTML = `<p style="color:var(--muted);font-size:13px;">No predictions yet.</p>`;
+    return;
+  }
+  container.innerHTML = products.slice(0, 4).map(p => {
+    const score = Math.round(p.market_fit_score);
+    const color = score >= 70 ? "var(--accent)" : score >= 45 ? "#ffb400" : "var(--accent3)";
+    const date  = new Date(p.createdAt).toLocaleDateString("en-IN", { month:"short", day:"numeric", hour:"2-digit", minute:"2-digit" });
+    return `
+      <div class="history-item">
+        <div class="history-item-left">
+          <div class="history-item-icon">${CAT_ICONS[p.category] || "📦"}</div>
+          <div class="history-item-info">
+            <div class="history-item-cat">${CAT_LABELS[p.category] || p.category}</div>
+            <div class="history-item-date">${date}</div>
+          </div>
+        </div>
+        <div class="history-item-score" style="color:${color}">${score}</div>
+      </div>
+    `;
+  }).join("");
+}
+
+// ── Toast ──────────────────────────────────────────────────────────────────
+function showToast(msg, type = "success") {
+  const t = document.createElement("div");
+  t.className = `toast ${type}`;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3500);
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────
+(function init() {
+  if (token) {
+    document.getElementById("nav-name").textContent = userName;
+    showPage("dashboard-page");
+    renderFeatureForm();
+    loadHistory();
+  } else {
+    showPage("auth-page");
+  }
+
+  // Enter key on auth forms
+  document.getElementById("login-password").addEventListener("keydown", e => {
+    if (e.key === "Enter") handleLogin();
+  });
+  document.getElementById("reg-password")?.addEventListener("keydown", e => {
+    if (e.key === "Enter") handleRegister();
+  });
+})();
+</script>
+</body>
+</html>

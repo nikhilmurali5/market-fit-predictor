@@ -1,0 +1,10 @@
+# MongoDB Connection
+MONGO_URI=mongodb://localhost:27017/market_fit_db
+
+# FastAPI ML Service URL
+FASTAPI_URL=http://localhost:8000
+
+# TinyLlama via Ollama (local)
+OLLAMA_URL=http://localhost:11434
+OLLAMA_MODEL=tinyllama
+AI_PROVIDER=ollama
